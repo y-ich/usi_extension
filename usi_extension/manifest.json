@@ -1,0 +1,16 @@
+{
+    "content_scripts": [ {
+       "js": [ "content.js" ],
+       "matches": [ "http://live.shogi.or.jp/*"],
+       "run_at": "document_idle"
+    } ],
+    "background": {
+      "service_worker": "background.js"
+   },
+   "description": "exntesion communicating with USI engine",
+    "manifest_version": 3,
+    "name": "USI extension",
+    "permissions": [ "nativeMessaging", "background" ],
+    "version": "0.0.1"
+ }
+ 
