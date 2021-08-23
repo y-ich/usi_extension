@@ -1,22 +1,10 @@
+// (C) 2021 ICHIKAWA, Yuji
+// License: MIT
+
 try {
     importScripts("./kif.js");
 } catch (e) {
     console.log(e);
-}
-
-function getResponse(url) {
-    return new Promise(function(res, rej) {
-        const req = new XMLHttpRequest();
-        req.onreadystatechange = function() { 
-            if (req.readyState == 4 && req.status == 200) {
-                res(req.responseText);
-            } else {
-                rej(req.status);
-            }
-        }
-        req.open("GET", url, true); // true for asynchronous 
-        req.send(null);
-    });
 }
 
 function parse(line) {

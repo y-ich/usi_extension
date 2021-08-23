@@ -1,4 +1,8 @@
 #!/usr/bin/python3
+# AobaZero on native messaging protocol
+# reference: https://github.com/mdn/webextensions-examples/tree/master/native-messaging
+# (C) 2021 ICHIKAWA, Yuji
+# License: MIT
 
 import sys
 import os
@@ -8,27 +12,28 @@ from threading import Thread
 from subprocess import Popen, PIPE
 
 def get_message():
-    rawLength = sys.stdin.buffer.read(4)
-    if len(rawLength) == 0:
-        sys.exit(0)
-    messageLength = struct.unpack('@I', rawLength)[0]
-    message = sys.stdin.buffer.read(messageLength).decode('utf-8')
+    raw_length = sys.stdin.buffer.read(4)
+    if len(raw_length) == 0:
+        raise Exception("no length field")
+    message_length = struct.unpack("@I", raw_length)[0]
+    message = sys.stdin.buffer.read(message_length).decode("utf-8")
     return json.loads(message)
 
 # Send an encoded message to stdout
 def send_message(message):
-    def encodeMessage(messageContent):
-        encodedContent = json.dumps(messageContent).encode('utf-8')
-        encodedLength = struct.pack('@I', len(encodedContent))
-        return {'length': encodedLength, 'content': encodedContent}
+    def encode_message(message_content):
+        encoded_content = json.dumps(message_content).encode("utf-8")
+        encoded_length = struct.pack("@I", len(encoded_content))
+        return { "length": encoded_length, "content": encoded_content}
 
-    encodedMessage = encodeMessage(message)
-    sys.stdout.buffer.write(encodedMessage['length'])
-    sys.stdout.buffer.write(encodedMessage['content'])
+    encoded_message = encode_message(message)
+    sys.stdout.buffer.write(encoded_message['length'])
+    sys.stdout.buffer.write(encoded_message['content'])
     sys.stdout.buffer.flush()
 
-class AobaZero:
-    def __init__(self):
+class USIEngine:
+    def __init__(self, command):
+        self.command = command
         self.process = None
         self.thread = None
 
@@ -38,10 +43,10 @@ class AobaZero:
                 if self.process.poll() is not None:
                     break
                 line = self.process.stdout.readline().strip()
-                send_message('"' + line + '"')
+                send_message(f'"{line}"')
 
         working_dir = os.path.dirname(os.path.abspath(__file__))
-        self.process = Popen(["bin/aobaz", "-q", "-i", "-p", "80000", "-w", "weight-save/w000000003459.txt"], cwd=working_dir, stdin=PIPE, stdout=PIPE, encoding="utf-8")
+        self.process = Popen(self.command.split(" "), cwd=working_dir, stdin=PIPE, stdout=PIPE, encoding="utf-8")
         self.thread = Thread(target=process_stdout)
         self.thread.start()       
         while True:
@@ -50,5 +55,5 @@ class AobaZero:
             self.process.stdin.flush()
 
 if __name__ == "__main__":
-    aobaz = AobaZero()
+    aobaz = USIEngine("bin/aobaz -q -i -p 80000 -w weight-save/w000000003459.txt")
     aobaz.start()

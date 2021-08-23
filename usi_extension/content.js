@@ -1,3 +1,6 @@
+// (C) 2021 ICHIKAWA, Yuji
+// License: MIT
+
 function scoreToWinrate(score) {
     return 1.0 / (1.0 + Math.exp(-score / 600.0));
 }
@@ -8,10 +11,10 @@ function addSituationBar(container) {
     bar.style.left = "0px";
     bar.style.right = "0px";
     bar.style.margin = "auto";
-    bar.style.top = "54px";
+    bar.style.top = "56px";
     bar.style.margin = "0 auto";
     bar.style.width = "614px";
-    bar.style.height = "20px";
+    bar.style.height = "15px";
     bar.style.backgroundColor = "white";
     bar.style.border = "2px solid";
     const black = document.createElement("div");

@@ -1,3 +1,7 @@
+// このスクリプトは、python-shogi(https://github.com/gunyarakun/python-shogi)のKIF.pyの移植です
+// (C) 2021 ICHIKAWA, Yuji
+// License: MIT
+
 function splitext(str) {
     const i = str.lastIndexOf(".");
     return [str.slice(0, i), str.slice(i)]
