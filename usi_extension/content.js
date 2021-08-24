@@ -5,6 +5,33 @@ function scoreToWinrate(score) {
     return 1.0 / (1.0 + Math.exp(-score / 600.0));
 }
 
+function japaneseMove(usiMove) {
+    const PIECE_JAPANESE_SYMBOLS = {
+        "p": "歩",
+        "l": "香",
+        "n": "桂",
+        "s": "銀",
+        "g": "金",
+        "b": "角",
+        "r": "飛",
+        "k": "玉",
+        "+p": "と",
+        "+l": "杏",
+        "+n": "圭",
+        "+s": "全",
+        "+b": "馬",
+        "+r": "龍"
+    };
+    const OFFSET = "a".charCodeAt(0) - 1;
+    const ARABICS = ["０", "１", "２", "３", "４", "５", "６", "７", "８", "９"];
+    const KANJI_NUMBERS = ["零", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
+    if (/^[1-9]/.test(usiMove)) {
+        return `${ARABICS[parseInt(usiMove[0])] + KANJI_NUMBERS[usiMove.charCodeAt(1) - OFFSET]}の駒を${ARABICS[parseInt(usiMove[2])] + KANJI_NUMBERS[usiMove.charCodeAt(3) - OFFSET]}へ`;
+    } else {
+        return `持ち駒${PIECE_JAPANESE_SYMBOLS[usiMove.slice(0, 2)]}を${ARABICS[parseInt(usiMove[2])] + KANJI_NUMBERS[usiMove.charCodeAt(3) - OFFSET]}へ`;
+    }
+}
+
 function addSituationBar(container) {
     const bar = document.createElement("div");
     bar.id = "usi-extension-bar";
@@ -44,13 +71,14 @@ for (const line of script.textContent.split("\n")) {
         chrome.runtime.onMessage.addListener(function(message, sender, callback) {
             console.log(message);
             const winrate = Math.round(scoreToWinrate(message["score cp"]) * 100);
+            const move = japaneseMove(message["pv"][0].toLowerCase());
             if (message.turn === "先手") {
                 white.textContent = `${100 - winrate}%`;
                 white.style.width = `${100 - winrate}%`;
-                black.textContent = `${winrate}%`;
+                black.textContent = `${winrate}% ${move}`;
                 black.style.width = `${winrate}%`;
             } else {
-                white.textContent = `${winrate}%`;
+                white.textContent = `${winrate}% ${move}`;
                 white.style.width = `${winrate}%`;
                 black.textContent = `${100 - winrate}%`;
                 black.style.width = `${100 - winrate}%`;
