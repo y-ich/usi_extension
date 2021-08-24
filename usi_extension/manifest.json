@@ -1,6 +1,7 @@
 {
     "content_scripts": [ {
        "js": [ "content.js" ],
+       "css": [ "style.css" ],
        "matches": [ "http://live.shogi.or.jp/*"],
        "run_at": "document_idle"
     } ],
