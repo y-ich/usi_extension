@@ -112,6 +112,7 @@ class Updater {
             const parsed = Parser.parseStr(kif);
             const moves = parsed[0].moves;
             const turn = moves.length % 2 === 0 ? "先手" : "後手";
+            this.usi.issue("stop");
             this.usi.issue(`position startpos moves ${moves.join(" ")}`);
             this.usi.processMessage = (msg) => {
                 const info = parse(msg);
