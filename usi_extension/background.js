@@ -83,6 +83,12 @@ class Updater {
         this.url = url;
         this.usi = null;
         this.intervalId = null;
+        chrome.tabs.onRemoved.addListener((tabId) => {
+            this.stop();
+        });
+        chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+            this.stop();
+        });
     }
 
     async start(interval) {
@@ -99,8 +105,10 @@ class Updater {
             clearInterval(this.intervalId);
             this.intervalId = null;
         }
-        this.usi.terminate();
-        this.usi = null;
+        if (this.usi != null) {
+            this.usi.terminate();
+            this.usi = null;
+        }
     }
 
     async process() {
