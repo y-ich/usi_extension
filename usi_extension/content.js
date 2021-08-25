@@ -7,14 +7,14 @@ function scoreToWinrate(score) {
 
 function japaneseMove(usiMove) {
     const PIECE_JAPANESE_SYMBOLS = {
-        "p": "歩",
-        "l": "香",
-        "n": "桂",
-        "s": "銀",
-        "g": "金",
-        "b": "角",
-        "r": "飛",
-        "k": "玉",
+        "p*": "歩",
+        "l*": "香",
+        "n*": "桂",
+        "s*": "銀",
+        "g*": "金",
+        "b*": "角",
+        "r*": "飛",
+        "k*": "玉",
         "+p": "と",
         "+l": "杏",
         "+n": "圭",
@@ -70,6 +70,9 @@ for (const line of script.textContent.split("\n")) {
         }, false);
         chrome.runtime.onMessage.addListener(function(message, sender, callback) {
             console.log(message);
+            if (!("score cp" in message && "pv" in message)) {
+                return;
+            }
             const winrate = Math.round(scoreToWinrate(message["score cp"]) * 100);
             const move = japaneseMove(message["pv"][0].toLowerCase());
             if (message.turn === "先手") {
