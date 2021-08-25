@@ -84,10 +84,14 @@ class Updater {
         this.usi = null;
         this.intervalId = null;
         chrome.tabs.onRemoved.addListener((tabId) => {
-            this.stop();
+            if (this.tab.id === tabId) {
+                this.stop();
+            }
         });
         chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-            this.stop();
+            if (this.tab.id === tabId) {
+                this.stop();
+            }
         });
     }
 
