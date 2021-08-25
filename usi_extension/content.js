@@ -75,13 +75,13 @@ for (const line of script.textContent.split("\n")) {
             }
             const winrate = Math.round(scoreToWinrate(message["score cp"]) * 100);
             const move = japaneseMove(message["pv"][0].toLowerCase());
-            if (message.turn === "先手") {
+            if (message.moveNumber % 2 === 0) {
                 white.textContent = `${100 - winrate}%`;
                 white.style.width = `${100 - winrate}%`;
-                black.textContent = `${winrate}% ${move}`;
+                black.textContent = `${winrate}% ${message.moveNumber + 1}目 ${move}`;
                 black.style.width = `${winrate}%`;
             } else {
-                white.textContent = `${winrate}% ${move}`;
+                white.textContent = `${winrate}% ${message.moveNumber + 1}目 ${move}`;
                 white.style.width = `${winrate}%`;
                 black.textContent = `${100 - winrate}%`;
                 black.style.width = `${100 - winrate}%`;

@@ -123,12 +123,11 @@ class Updater {
             const kif = new TextDecoder("sjis").decode(data.value);
             const parsed = Parser.parseStr(kif);
             const moves = parsed[0].moves;
-            const turn = moves.length % 2 === 0 ? "先手" : "後手";
             this.usi.issue("stop");
             this.usi.issue(`position startpos moves ${moves.join(" ")}`);
             this.usi.processMessage = (msg) => {
                 const info = parse(msg);
-                info.turn = turn;
+                info.moveNumber = moves.length;
                 chrome.tabs.sendMessage(this.tab.id, info, null);
             };
             this.usi.issue("go infinite");
