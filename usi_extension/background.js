@@ -117,7 +117,7 @@ class Updater {
 
     async process() {
         try {
-            const response = await fetch(this.url);
+            const response = await fetch(this.url, { cache: "no-cache" });
             const reader = response.body.getReader();
             const data = await reader.read();
             const kif = new TextDecoder("sjis").decode(data.value);
