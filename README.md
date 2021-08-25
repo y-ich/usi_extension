@@ -6,8 +6,8 @@
 
 
 # インストール
-+ Native Messaging Hostをインストール
 + Chrome拡張をインストール
++ Native Messaging Hostをインストール
 
 # TODO
 - 推奨手の表示の改善(将棋版論理モデルの実装)
