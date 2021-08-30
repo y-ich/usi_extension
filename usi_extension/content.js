@@ -70,7 +70,7 @@ for (const line of script.textContent.split("\n")) {
         }, false);
         chrome.runtime.onMessage.addListener(function(message, sender, callback) {
             console.log(message);
-            if (!("score cp" in message && "pv" in message)) {
+            if (!("score cp" in message && "pv" in message && "nps" in message)) {
                 return;
             }
             const winrate = Math.round(scoreToWinrate(message["score cp"]) * 100);
@@ -78,10 +78,10 @@ for (const line of script.textContent.split("\n")) {
             if (message.moveNumber % 2 === 0) {
                 white.textContent = `${100 - winrate}%`;
                 white.style.width = `${100 - winrate}%`;
-                black.textContent = `${winrate}% ${message.moveNumber + 1}目 ${move}`;
+                black.textContent = `${winrate}% ${message.moveNumber + 1}手目 ${move} ${message["nps"]}nps`;
                 black.style.width = `${winrate}%`;
             } else {
-                white.textContent = `${winrate}% ${message.moveNumber + 1}目 ${move}`;
+                white.textContent = `${winrate}% ${message.moveNumber + 1}手目 ${move} ${message["nps"]}nps`;
                 white.style.width = `${winrate}%`;
                 black.textContent = `${100 - winrate}%`;
                 black.style.width = `${100 - winrate}%`;
