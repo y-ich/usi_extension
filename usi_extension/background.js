@@ -72,8 +72,11 @@ class Usi {
     }
 
     terminate() {
+        this.issue("stop");
         this.issue("quit");
-        this.port.disconnect();
+        setTimeout(() => {
+            this.port.disconnect();
+        }, 100);
     }
 }
 
@@ -83,6 +86,7 @@ class Updater {
         this.url = url;
         this.usi = null;
         this.intervalId = null;
+        this.textDecoder = new TextDecoder("shift-jis");
         chrome.tabs.onRemoved.addListener((tabId) => {
             if (this.tab.id === tabId) {
                 this.stop();
@@ -118,9 +122,8 @@ class Updater {
     async process() {
         try {
             const response = await fetch(this.url, { cache: "reload" });
-            const reader = response.body.getReader();
-            const data = await reader.read();
-            const kif = new TextDecoder("sjis").decode(data.value);
+            const data = await response.arrayBuffer();
+            const kif = this.textDecoder.decode(data);
             const parsed = Parser.parseStr(kif);
             const moves = parsed[0].moves;
             this.usi.issue("stop");
