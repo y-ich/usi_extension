@@ -85,7 +85,6 @@ class Updater {
         this.tab = tab;
         this.url = url;
         this.usi = null;
-        this.intervalId = null;
         this.textDecoder = new TextDecoder("shift-jis");
         chrome.tabs.onRemoved.addListener((tabId) => {
             if (this.tab.id === tabId) {
@@ -93,39 +92,37 @@ class Updater {
             }
         });
         chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-            if (this.tab.id === tabId) {
-                this.stop();
+            if (this.tab.id === tabId && changeInfo.audible === true) {
+                console.log("onUpdated", changeInfo);
+                chrome.tabs.sendMessage(this.tab.id, {
+                    request: "moveNumber"
+                }, null);
             }
         });
     }
 
-    async start(interval) {
+    async start(moveNumber) {
         this.usi = new Usi();
         await this.usi.command("usi", "usiok");
         await this.usi.command("isready", "readyok");
         this.usi.issue("usinewgame");
-        await this.process();
-        this.intervalId = setInterval(async () => { await this.process() }, interval);
+        await this.process(moveNumber);
     }
 
     stop() {
-        if (this.intervalId != null) {
-            clearInterval(this.intervalId);
-            this.intervalId = null;
-        }
         if (this.usi != null) {
             this.usi.terminate();
             this.usi = null;
         }
     }
 
-    async process() {
+    async process(moveNumber) {
         try {
             const response = await fetch(this.url, { cache: "reload" });
             const data = await response.arrayBuffer();
             const kif = this.textDecoder.decode(data);
             const parsed = Parser.parseStr(kif);
-            const moves = parsed[0].moves;
+            const moves = parsed[0].moves.slice(0, moveNumber);
             this.usi.issue("stop");
             this.usi.issue(`position startpos moves ${moves.join(" ")}`);
             this.usi.processMessage = (msg) => {
@@ -143,11 +140,15 @@ class Updater {
 
 let updater;
 chrome.runtime.onMessage.addListener(async (message,sender,sendResponse) => {
+    console.log(message);
     switch (message.command) {
     case "think":
         const url = new URL(message.url);
-        updater = new Updater(sender.tab, url);
-        await updater.start(30000);
+        if (updater == null) {
+            updater = new Updater(sender.tab, url);
+            await updater.start();
+        }
+        await updater.process(message.moveNumber);
         break;
     case "stop":
         updater.stop();
