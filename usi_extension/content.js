@@ -79,7 +79,11 @@ if (script != null) {
                         moveNumber: kifuList.selectedIndex
                     });
                 } else {
-                    if (!("score cp" in message && "pv" in message && "nps" in message)) {
+                    if (!("score cp" in message && "pv" in message && "nodes" in message && "nps" in message)) {
+                        return;
+                    }
+                    if (message["nodes"] <= 1) {
+                        // message["nodes"] == 1の時のwinrateはおかしいので表示しない
                         return;
                     }
                     const winrate = Math.round(scoreToWinrate(message["score cp"]) * 100);
@@ -87,10 +91,10 @@ if (script != null) {
                     if (message.moveNumber % 2 === 0) {
                         white.textContent = `${100 - winrate}%`;
                         white.style.width = `${100 - winrate}%`;
-                        black.textContent = `${winrate}% ${message.moveNumber + 1}手目 ${move} ${message["nps"]}nps`;
+                        black.textContent = `${winrate}% ${message.moveNumber + 1}手目 ${move} ${message["nodes"]}手`;
                         black.style.width = `${winrate}%`;
                     } else {
-                        white.textContent = `${winrate}% ${message.moveNumber + 1}手目 ${move} ${message["nps"]}nps`;
+                        white.textContent = `${winrate}% ${message.moveNumber + 1}手目 ${move} ${message["nodes"]}手`;
                         white.style.width = `${winrate}%`;
                         black.textContent = `${100 - winrate}%`;
                         black.style.width = `${100 - winrate}%`;
