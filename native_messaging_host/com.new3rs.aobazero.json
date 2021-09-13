@@ -1,7 +1,7 @@
 {
     "name": "com.new3rs.aobazero",
     "description": "aobaz native application",
-    "path": "/Users/yuji/OpenSources/shogi/aobazero/aobaz.sh",
+    "path": "/Users/yuji/OpenSources/shogi/aobazero/aobaz.py",
     "type": "stdio",
     "allowed_origins": [
       "chrome-extension://nngkhlkekhahmpcidalpgbcadkegffni/"
