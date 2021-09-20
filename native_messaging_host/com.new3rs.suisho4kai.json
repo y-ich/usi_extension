@@ -1,0 +1,9 @@
+{
+    "name": "com.new3rs.suisho4kai",
+    "description": "suisho4kai native application",
+    "path": "/Users/yuji/ChromeExtensions/usi_extension/native_messaging_host/suisho4kai.py",
+    "type": "stdio",
+    "allowed_origins": [
+      "chrome-extension://nngkhlkekhahmpcidalpgbcadkegffni/"
+    ]
+}

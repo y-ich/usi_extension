@@ -30,10 +30,10 @@ function parse(line) {
 }
 
 class Usi {
-    constructor() {
+    constructor(name) {
         this.processMessage = null;
         this.messages = [];
-        this.port = chrome.runtime.connectNative("com.new3rs.aobazero");
+        this.port = chrome.runtime.connectNative(name);
         this.port.onMessage.addListener((msg) => {
             console.log(msg);
             if (this.processMessage) {
@@ -76,7 +76,7 @@ class Usi {
         this.issue("quit");
         setTimeout(() => {
             this.port.disconnect();
-        }, 100);
+        }, 1000);
     }
 }
 
@@ -101,15 +101,15 @@ class Updater {
         });
     }
 
-    async start(moveNumber) {
-        this.usi = new Usi();
+    async start(name, moveNumber) {
+        this.usi = new Usi(name);
         await this.usi.command("usi", "usiok");
         await this.usi.command("isready", "readyok");
         this.usi.issue("usinewgame");
         await this.process(moveNumber);
     }
 
-    stop() {
+    terminate() {
         if (this.usi != null) {
             this.usi.terminate();
             this.usi = null;
@@ -146,12 +146,22 @@ chrome.runtime.onMessage.addListener(async (message,sender,sendResponse) => {
         const url = new URL(message.url);
         if (updater == null) {
             updater = new Updater(sender.tab, url);
-            await updater.start();
+            let name;
+            switch (message.engine) {
+            case "AobaZero":
+                name = "com.new3rs.aobazero";
+                break;
+            default:
+                name = "com.new3rs.suisho4kai";
+                break;
+            }
+            await updater.start(name);
         }
         await updater.process(message.moveNumber);
         break;
     case "stop":
-        updater.stop();
+        updater.terminate();
+        updater = null;
         break;
     default:
         break;

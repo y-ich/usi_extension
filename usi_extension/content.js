@@ -46,6 +46,19 @@ function addSituationBar(container) {
     return [bar, white, black];
 }
 
+function addEngineSelect(container) {
+    const select = document.createElement("select");
+    select.id = "engine-select";
+    for (const e of ["水匠4改", "AobaZero"]) {
+        const option = document.createElement("option");
+        option.value = e;
+        option.innerText = e;
+        select.appendChild(option);
+    }
+    container.insertBefore(select, container.childNodes[1]);
+    return select;
+}
+
 const script = document.querySelector("main > script");
 if (script != null) {
     for (const line of script.textContent.split("\n")) {
@@ -54,6 +67,7 @@ if (script != null) {
             const url = new URL(match[1], document.location);
             const container = document.querySelector("div");
             const [bar, white, black] = addSituationBar(container);
+            const select = addEngineSelect(container);
             const kifuList = document.getElementById("kifu_list");
             let thinking = false;
             bar.addEventListener("click", function(event) {
@@ -64,6 +78,7 @@ if (script != null) {
                 } else {
                     chrome.runtime.sendMessage({
                         command: "think",
+                        engine: select.value,
                         url: url.toString(),
                         moveNumber: kifuList.selectedIndex
                     });
