@@ -9,6 +9,7 @@
     background-color: white;
     border: 2px solid;
     pointer-events: none;
+    z-index: 2147483647;
 }
 
 #usi-extension-bar::after {

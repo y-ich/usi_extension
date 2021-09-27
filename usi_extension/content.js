@@ -41,7 +41,7 @@ function addSituationBar(container) {
     const black = document.createElement("div");
     black.textContent = "50%";
     bar.appendChild(black);
-    container.insertBefore(bar, container.childNodes[0]);
+    container.insertBefore(bar, container.children[0]);
 
     return [bar, white, black];
 }
@@ -55,68 +55,137 @@ function addEngineSelect(container) {
         option.innerText = e;
         select.appendChild(option);
     }
-    container.insertBefore(select, container.childNodes[1]);
+    container.insertBefore(select, container.children[1]);
     return select;
 }
 
-const script = document.querySelector("main > script");
-if (script != null) {
-    for (const line of script.textContent.split("\n")) {
-        const match = line.match(/const KIF_FILE_NAME = "(.*)";/);
-        if (match) {
-            const url = new URL(match[1], document.location);
-            const container = document.querySelector("div");
-            const [bar, white, black] = addSituationBar(container);
-            const select = addEngineSelect(container);
-            const kifuList = document.getElementById("kifu_list");
-            let thinking = false;
-            bar.addEventListener("click", function(event) {
-                if (thinking) {
-                    chrome.runtime.sendMessage({
-                        command: "stop"
-                    });
+function main() {
+    const match = document.location.href.match(/https:\/\/mainichi.jp\/oshosen-kifu\/(\d+).html/);
+    if (match != null) {
+        const url = new URL(`https://cdn.mainichi.jp/vol1/shougi/kif/ousho20${match[1]}0101.kif`);
+        const container = document.querySelector("div.kiban");
+        console.log(container);
+        if (container == null) {
+            console.log("no container");
+            return;
+        }
+        const [bar, white, black] = addSituationBar(container);
+        const select = addEngineSelect(container);
+        let thinking = false;
+        bar.addEventListener("click", function(event) {
+            if (thinking) {
+                chrome.runtime.sendMessage({
+                    command: "stop"
+                });
+            } else {
+                const kifuList = document.querySelector("div.tesu-list > ul").children;
+                const current = document.querySelector("div.tesu-list > ul > li.current");
+                const selectedIndex = Array.from(kifuList).indexOf(current);
+                console.log(selectedIndex);
+                chrome.runtime.sendMessage({
+                    command: "think",
+                    engine: select.value,
+                    url: url.toString(),
+                    moveNumber: selectedIndex
+                });
+            }
+            thinking = !thinking;
+            bar.classList.toggle("thinking");
+        }, false);
+        chrome.runtime.onMessage.addListener(function(message, sender, callback) {
+            if (message.request === "moveNumber") {
+                const current = document.querySelector("div.tesu-list > ul > li.current");
+                const selectedIndex = Array.from(kifuList).indexOf(current);
+                chrome.runtime.sendMessage({
+                    command: "think",
+                    url: url.toString(),
+                    moveNumber: selectedIndex
+                });
+            } else {
+                if (!("score cp" in message && "pv" in message && "nodes" in message && "nps" in message)) {
+                    return;
+                }
+                if (message["nodes"] <= 1) {
+                    // message["nodes"] == 1の時のwinrateはおかしいので表示しない
+                    return;
+                }
+                const winrate = Math.round(scoreToWinrate(message["score cp"]) * 100);
+                const move = japaneseMove(message["pv"][0].toLowerCase());
+                if (message.moveNumber % 2 === 0) {
+                    white.textContent = `${100 - winrate}%`;
+                    white.style.width = `${100 - winrate}%`;
+                    black.textContent = `${winrate}% ${message.moveNumber + 1}手目 ${move} ${message["nodes"]}手`;
+                    black.style.width = `${winrate}%`;
                 } else {
-                    chrome.runtime.sendMessage({
-                        command: "think",
-                        engine: select.value,
-                        url: url.toString(),
-                        moveNumber: kifuList.selectedIndex
+                    white.textContent = `${winrate}% ${message.moveNumber + 1}手目 ${move} ${message["nodes"]}手`;
+                    white.style.width = `${winrate}%`;
+                    black.textContent = `${100 - winrate}%`;
+                    black.style.width = `${100 - winrate}%`;
+                }
+            }
+        });
+} else { // デフォルトではKifu for JSを仮定
+        const script = document.querySelector("main > script");
+        if (script != null) {
+            for (const line of script.textContent.split("\n")) {
+                const match = line.match(/const KIF_FILE_NAME = "(.*)";/);
+                if (match) {
+                    const url = new URL(match[1], document.location);
+                    const container = document.querySelector("div");
+                    const [bar, white, black] = addSituationBar(container);
+                    const select = addEngineSelect(container);
+                    const kifuList = document.getElementById("kifu_list");
+                    let thinking = false;
+                    bar.addEventListener("click", function(event) {
+                        if (thinking) {
+                            chrome.runtime.sendMessage({
+                                command: "stop"
+                            });
+                        } else {
+                            chrome.runtime.sendMessage({
+                                command: "think",
+                                engine: select.value,
+                                url: url.toString(),
+                                moveNumber: kifuList.selectedIndex
+                            });
+                        }
+                        thinking = !thinking;
+                        bar.classList.toggle("thinking");
+                    }, false);
+                    chrome.runtime.onMessage.addListener(function(message, sender, callback) {
+                        if (message.request === "moveNumber") {
+                            chrome.runtime.sendMessage({
+                                command: "think",
+                                url: url.toString(),
+                                moveNumber: kifuList.selectedIndex
+                            });
+                        } else {
+                            if (!("score cp" in message && "pv" in message && "nodes" in message && "nps" in message)) {
+                                return;
+                            }
+                            if (message["nodes"] <= 1) {
+                                // message["nodes"] == 1の時のwinrateはおかしいので表示しない
+                                return;
+                            }
+                            const winrate = Math.round(scoreToWinrate(message["score cp"]) * 100);
+                            const move = japaneseMove(message["pv"][0].toLowerCase());
+                            if (message.moveNumber % 2 === 0) {
+                                white.textContent = `${100 - winrate}%`;
+                                white.style.width = `${100 - winrate}%`;
+                                black.textContent = `${winrate}% ${message.moveNumber + 1}手目 ${move} ${message["nodes"]}手`;
+                                black.style.width = `${winrate}%`;
+                            } else {
+                                white.textContent = `${winrate}% ${message.moveNumber + 1}手目 ${move} ${message["nodes"]}手`;
+                                white.style.width = `${winrate}%`;
+                                black.textContent = `${100 - winrate}%`;
+                                black.style.width = `${100 - winrate}%`;
+                            }
+                        }
                     });
                 }
-                thinking = !thinking;
-                bar.classList.toggle("thinking");
-            }, false);
-            chrome.runtime.onMessage.addListener(function(message, sender, callback) {
-                if (message.request === "moveNumber") {
-                    chrome.runtime.sendMessage({
-                        command: "think",
-                        url: url.toString(),
-                        moveNumber: kifuList.selectedIndex
-                    });
-                } else {
-                    if (!("score cp" in message && "pv" in message && "nodes" in message && "nps" in message)) {
-                        return;
-                    }
-                    if (message["nodes"] <= 1) {
-                        // message["nodes"] == 1の時のwinrateはおかしいので表示しない
-                        return;
-                    }
-                    const winrate = Math.round(scoreToWinrate(message["score cp"]) * 100);
-                    const move = japaneseMove(message["pv"][0].toLowerCase());
-                    if (message.moveNumber % 2 === 0) {
-                        white.textContent = `${100 - winrate}%`;
-                        white.style.width = `${100 - winrate}%`;
-                        black.textContent = `${winrate}% ${message.moveNumber + 1}手目 ${move} ${message["nodes"]}手`;
-                        black.style.width = `${winrate}%`;
-                    } else {
-                        white.textContent = `${winrate}% ${message.moveNumber + 1}手目 ${move} ${message["nodes"]}手`;
-                        white.style.width = `${winrate}%`;
-                        black.textContent = `${100 - winrate}%`;
-                        black.style.width = `${100 - winrate}%`;
-                    }
-                }
-            });
-            break;
+            }
         }
     }
 }
+
+main();

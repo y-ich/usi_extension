@@ -118,10 +118,14 @@ class Updater {
 
     async process(moveNumber) {
         try {
+            console.log(this.url);
             const response = await fetch(this.url, { cache: "reload" });
             const data = await response.arrayBuffer();
             const kif = this.textDecoder.decode(data);
+            console.log(kif);
             const parsed = Parser.parseStr(kif);
+            console.log(moveNumber);
+            console.log(parsed);
             const moves = parsed[0].moves.slice(0, moveNumber);
             this.usi.issue("stop");
             this.usi.issue(`position startpos moves ${moves.join(" ")}`);
