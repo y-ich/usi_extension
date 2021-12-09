@@ -44,3 +44,14 @@
     left: 0px;
     top: 0px;
 }
+
+/* 毎日新聞棋譜サイト */
+.kiban #engine-select {
+    position: absolute;
+    left: 0px;
+    top: -10px;
+}
+
+.kiban #usi-extension-bar {
+    top: -10px;
+}

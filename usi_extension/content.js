@@ -49,7 +49,7 @@ function addSituationBar(container) {
 function addEngineSelect(container) {
     const select = document.createElement("select");
     select.id = "engine-select";
-    for (const e of ["水匠4改", "AobaZero"]) {
+    for (const e of ["水匠4改", "DLShogi", "AobaZero"]) {
         const option = document.createElement("option");
         option.value = e;
         option.innerText = e;
@@ -124,7 +124,7 @@ function main() {
                 }
             }
         });
-} else { // デフォルトではKifu for JSを仮定
+    } else { // デフォルトではKifu for JSを仮定
         const script = document.querySelector("main > script");
         if (script != null) {
             for (const line of script.textContent.split("\n")) {

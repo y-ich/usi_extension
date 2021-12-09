@@ -104,6 +104,15 @@ class Updater {
     async start(name, moveNumber) {
         this.usi = new Usi(name);
         await this.usi.command("usi", "usiok");
+        switch (name) {
+        case "com.new3rs.dlshogi":
+            //this.usi.issue("setoption name DNN_Model value /Users/yuji/Projects/DeepLearningShogi/coreml/DLShogi_167.mlmodel");
+            this.usi.issue("setoption name DNN_Model value /Users/yuji/Projects/DeepLearningShogi/coreml/DLShogi_exhi.mlmodel");
+            this.usi.issue("setoption name DNN_Batch_Size value 1");
+            this.usi.issue("setoption name UCT_Threads value 1");
+        default:
+            break;
+        }
         await this.usi.command("isready", "readyok");
         this.usi.issue("usinewgame");
         await this.process(moveNumber);
@@ -152,6 +161,9 @@ chrome.runtime.onMessage.addListener(async (message,sender,sendResponse) => {
             updater = new Updater(sender.tab, url);
             let name;
             switch (message.engine) {
+            case "DLShogi":
+                name = "com.new3rs.dlshogi";
+                break;
             case "AobaZero":
                 name = "com.new3rs.aobazero";
                 break;
